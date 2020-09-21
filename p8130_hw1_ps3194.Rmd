@@ -1,0 +1,53 @@
+---
+title: "p8130_hw1_ps3194"
+author: "Pangsibo Shen"
+date: "9/20/2020"
+output: 
+  html_document:
+  toc: true
+---
+```{r}
+library(arsenal)#load arsenal package
+library(ggplot2)#load ggplot2 package
+library(dplyr)#load dplyr package
+```
+
+## Problem 1
+load Antibodies dataset
+```{r}
+ab <- read.csv("Antibodies.csv")
+head(ab)
+```
+#### 1)Using the entire sample, provide descriptive statistics for all variables of interest.
+```{r tabl1}
+# Clean the output
+my_controls <- tableby.control(
+               total = T,
+               test=F,  # No test p-values yet
+               numeric.stats = c("meansd", "medianq1q3","iqr","range", "Nmiss2"),
+               cat.stats = c("countpct", "Nmiss2"),
+               stats.labels = list(
+               meansd = "Mean (SD)",
+               medianq1q3 = "Median (Q1, Q3)",
+               iqr = "IQR",
+               range = "Min - Max",
+               Nmiss2 = "Missing",
+               countpct = "N (%)"))
+
+#Change variable names/labels
+my_labels <- list(AgeCategory = "AgeCategory(yrs)", Antibody_IgM = "IG-M Antibody", Smell = "Smell", Gender = "Gender")
+
+tab1 <- tableby(~AgeCategory + Antibody_IgM + Smell + Gender,data = ab, control = my_controls)
+
+summary(tab1, title = "Descriptive Statistics: Antibodies Data", labelTranslations = my_labels, text=T)
+```
+
+```{r histogram}
+ggplot(ab, aes(Antibody_IgM, na.rm = TRUE)) +
+  geom_histogram(binwidth = 0.01) +
+  geom_vline(aes(xintercept = mean(Antibody_IgM, na.rm=T)), color="red", linetype="dashed", size=2) + #add a red dashed line for mean Antibody
+  geom_vline(aes(xintercept = median(Antibody_IgM, na.rm=T)), color="blue", linetype="solid", size=2) + #add a blue solid line for median Antibody
+  labs(title="Histogram of IG-M Antibody") +                                
+  labs(x = "IG-M Antibody", y = "Count")                                         
+```
+From the graph, we notice that the mean is greater than the median and the mean tends to be 'pulled' toward the right tail of the distribution. Therefore, The histogram is skewed towards right. 
