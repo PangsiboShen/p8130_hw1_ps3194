@@ -19,6 +19,9 @@ ab <- read.csv("Antibodies.csv")
 head(ab)
 ```
 #### 1)Using the entire sample, provide descriptive statistics for all variables of interest.
+
+##### a)
+
 ```{r tabl1}
 # Clean the output
 my_controls <- tableby.control(
@@ -42,12 +45,50 @@ tab1 <- tableby(~AgeCategory + Antibody_IgM + Smell + Gender,data = ab, control 
 summary(tab1, title = "Descriptive Statistics: Antibodies Data", labelTranslations = my_labels, text=T)
 ```
 
+##### b)
+
 ```{r histogram}
 ggplot(ab, aes(Antibody_IgM, na.rm = TRUE)) +
-  geom_histogram(binwidth = 0.01) +
+  geom_histogram(binwidth = 0.01, alpha =.5, position = "identity", col = "black") +
   geom_vline(aes(xintercept = mean(Antibody_IgM, na.rm=T)), color="red", linetype="dashed", size=2) + #add a red dashed line for mean Antibody
   geom_vline(aes(xintercept = median(Antibody_IgM, na.rm=T)), color="blue", linetype="solid", size=2) + #add a blue solid line for median Antibody
   labs(title="Histogram of IG-M Antibody") +                                
   labs(x = "IG-M Antibody", y = "Count")                                         
 ```
 From the graph, we notice that the mean is greater than the median and the mean tends to be 'pulled' toward the right tail of the distribution. Therefore, The histogram is skewed towards right. 
+
+#### 2) Provide descriptive statistics for all variables, stratified by smell category
+
+##### a)
+
+```{r}
+ab2 <- ab%>%
+  filter(Smell %in% c( 'Altered','Normal'))# select only Normal and Altered data from Smell
+
+tab2 <- tableby(Smell~ AgeCategory  + Gender + Antibody_IgM, data = ab2, control = my_controls)
+summary(tab2, title = "Descriptive Statistics: Antibodies Data, Stratified by Smell", labelTranslations = my_labels, text=T)
+```
+people with self-reported smell loss have larger mean and median value for IG-M Antibody comparing to people with self-reported normal smell.
+
+##### b)
+
+```{r histogramb}
+ggplot(ab2, aes(Antibody_IgM, fill = Smell, na.rm = TRUE)) +
+  geom_histogram(binwidth = 0.01,alpha =.5, position = "identity", col = "black") +
+  geom_vline(aes(xintercept = mean(Antibody_IgM, na.rm=T)), color="red", linetype="dashed", size=2) + #add a red dashed line for mean Antibody
+  labs(title="Histogram of IG-M Antibody with Smell Status") +                                
+  labs(x = "IG-M Antibody", y = "Count") +
+  scale_fill_discrete(name = "Smell status", labels = c("Normal", "Altered"))
+```
+```{r boxplot}
+ggplot(ab2, aes(x = Smell, y = Antibody_IgM, fill = Smell)) +
+  geom_boxplot(outlier.colour="black", outlier.shape=16,
+               outlier.size=2, notch=FALSE) +
+  scale_fill_manual(values = c("cyan", "red"),
+                    labels = expression("Altered", "Normal")) +                 
+  xlab("") +
+  ylab("IG-M Antibody") +
+  labs(title = "Boxplot of IG-M Antibody with Smell Status")+
+  theme(legend.position = "top", legend.title = element_blank())  
+```
+
